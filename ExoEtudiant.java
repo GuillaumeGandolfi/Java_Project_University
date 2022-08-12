@@ -17,6 +17,10 @@ public class ExoEtudiant {
         Etudiant etudiant3 = new Etudiant("Astrid", 26);
         Etudiant etudiant4 = new Etudiant("Paolo", 27);
         Etudiant etudiant5 = new Etudiant("Zoe", 26, 12, 14, 17);
+        
+        // Instanciation d'un nouvel étudiant avec en plus la classe inscription
+        Etudiant etudiant7 = new Etudiant("Pierre", 24, 1, 2);
+        System.out.println(etudiant7);
 
         // Affichage des informations pour chaque étudiant à l'aide de l'accesseur get()
         System.out.println("L'étudiant " + etudiant1.getNom() + " est agé de " + etudiant1.getAge() + " ans.");
@@ -43,6 +47,15 @@ public class ExoEtudiant {
         etudiant4.setNoteSysteme(10);
         etudiant4.setNoteStage(11);
 
+        // tests contraintes
+        etudiant5.setNoteSysteme(22); 
+        // On voit bien un message d'erreur, la modification de la note n'est pas prise en compte
+        Etudiant etudiant8 = new Etudiant("Patrick", 25, 3, 1);
+        System.out.println(etudiant8);
+        // Message d'erreur également
+        Etudiant etudiant9 = new Etudiant("Coline", 25, 1, 4);
+        System.out.println(etudiant9); // Encore message d'erreur !
+
         // Affichage pour voir si les modifications ont bien été prises en compte
         System.out.println("L'étudiant " + etudiant1.getNom() + " est agé de " + etudiant1.getAge() +  
         " ans et a obtenu les notes de " + etudiant1.getNoteProgrammation() + " en programmation, " + etudiant1.getNoteSysteme() + 
@@ -66,20 +79,37 @@ public class ExoEtudiant {
 
         // Nouvelle instance d'étudiant en appelant méthode Saisie()
         // Création d'un étudiant à l'aide du constructeur vide
-        Etudiant etudiant6 = new Etudiant();
+
+        //Etudiant etudiant6 = new Etudiant();
+
         // Appelle de la méthode Saisie() pour demander à l'utilisateur de remplir les infos de l'étudiant
-        etudiant6.Saisie();
+
+        //etudiant6.Saisie();
+
         // Afficher les infos de l'étudiant
-        System.out.println(etudiant6);
+        System.out.println(etudiant5);
 
         // Appel de la méthode Moyenne()
-        System.out.println(etudiant6.Moyenne());
+        System.out.println(etudiant5.Moyenne());
 
         // Appel de la méthode Mention()
-        System.out.println("Mention de l'étudiant " + etudiant6.getNom() + " : " + etudiant6.Mention());
+        System.out.println("Mention de l'étudiant " + etudiant5.getNom() + " : " + etudiant5.Mention());
 
         // Appel de la méthode ligneResultats()
-        System.out.println(etudiant6.ligneResultats());
+        System.out.println(etudiant5.ligneResultats());
+
+
+        // Modifier des étudiants pour afficher des infos d'inscriptions
+        etudiant1.setInscription(new Inscription(1,2));
+        System.out.println(etudiant1);
+        etudiant2.setInscription(new Inscription(2, 2));
+        System.out.println(etudiant2);
+        etudiant3.setInscription(new Inscription(1, 3));
+        System.out.println(etudiant3);
+        etudiant4.setInscription(new Inscription(1, 3));
+        System.out.println(etudiant4);
+        etudiant5.setInscription(new Inscription(1, 1));
+        System.out.println(etudiant5);
     }
 }
 
@@ -94,27 +124,66 @@ class Etudiant{
     private double noteSysteme;
     private double noteStage;
 
+    // Pour faire le lien avec la classe Inscription
+    private Inscription inscription;
+
     // Constructeur par défaut (vide)
     public Etudiant(){}
 
     // Constructeur ne prenant que le nom
+
+    /**
+     * Etant donné que l'on a mis des contraintes sur les accesseurs, il faut modifier les constructeurs
+     * pour qu'ils prennent également ces contraintes en cas d'ajout de nouvel étudiant
+     * 
+     * Ainsi au lieu de this.nom = nom, on va mettre this.setNom(nom);
+     */
     public Etudiant(String nom){
-        this.nom = nom;
+        this.setNom(nom);
     }
 
     // Constructeur prenant nom et age
     public Etudiant(String nom, int age){
-        this.nom = nom;
-        this.age = age;
+        this.setNom(nom);
+        this.setAge(age);
     }
 
     // Constructeur prenant tous les attributs
     public Etudiant(String nom, int age, double noteProgrammation, double noteSysteme, double noteStage){
+        this.setNom(nom);
+        this.setAge(age);
+        this.setNoteProgrammation(noteProgrammation);
+        this.setNoteSysteme(noteSysteme);
+        this.setNoteStage(noteStage);
+    }
+
+    // Nouveau constructeur avec nom et age puis prenant en compte l'attribut inscription
+    public Etudiant(String nom, int age, int codeInscription, int codePays){
+        this.setNom(nom);
+        this.setAge(age);
+        this.inscription = new Inscription(codeInscription, codePays);
+    }
+
+    // Constructeur tous attributs etudiant + attributs inscription
+    public Etudiant(String nom, int age, double noteProgrammation, double noteSysteme, double noteStage,
+    int codeInscription, int codePays){
         this.nom = nom;
         this.age = age;
         this.noteProgrammation = noteProgrammation;
         this.noteSysteme = noteSysteme;
         this.noteStage = noteStage;
+        this.inscription = new Inscription(codeInscription, codePays);
+    }
+
+    // Même constructeur mais sans codeInscription et codePays
+    public Etudiant(String nom, int age, double noteProgrammation, double noteSysteme, 
+    double noteStage, Inscription inscription){
+        this.nom = nom;
+        this.age = age;
+        this.noteProgrammation = noteProgrammation;
+        this.noteSysteme = noteSysteme;
+        this.noteStage = noteStage;
+        this.inscription = new Inscription();
     }
 
     // Getteur (obtenir la valeur) et Setteur (définir / modifier la valeur)
@@ -133,7 +202,8 @@ class Etudiant{
         return this.age;
     }
     public void setAge(int age){
-        this.age = age;
+        if ((age > 0) && (age <= 140)){
+        this.age = age;}
     }
 
     // Accesseur noteProgrammation
@@ -141,7 +211,10 @@ class Etudiant{
         return this.noteProgrammation;
     }
     public void setNoteProgrammation(double noteProgrammation){
-        this.noteProgrammation = noteProgrammation;
+        if ((noteProgrammation >= 0) && (noteProgrammation <= 20)){
+        this.noteProgrammation = noteProgrammation;} else {
+            System.out.println("Erreur, la note doit être comprise entre 0 et 20");
+        }
     }
 
     // Accesseur noteSysteme
@@ -149,7 +222,10 @@ class Etudiant{
         return this.noteSysteme;
     }
     public void setNoteSysteme(double noteSysteme){
-        this.noteSysteme = noteSysteme;
+        if ((noteSysteme >= 0) && (noteSysteme <=20)){
+        this.noteSysteme = noteSysteme;} else {
+            System.out.println("Erreur, la note doit être comprise entre 0 et 20");
+        }
     }
 
     // Accesseur noteStage
@@ -157,15 +233,30 @@ class Etudiant{
         return this.noteStage;
     }
     public void setNoteStage(double noteStage){
-        this.noteStage = noteStage;
+        if ((noteStage >=0) && (noteStage <= 20)){
+        this.noteStage = noteStage;} else {
+            System.out.println("Erreur, la note doit être comprise entre 0 et 20");
+        }
+    }
+
+    // Accesseur Inscription
+    public Inscription getInscription(){
+        return this.inscription;
+    }
+    public void setInscription(Inscription inscription){
+        this.inscription = inscription;
     }
 
     // Redéfinir méthode toString() pour qu'elle retourne le nom et l'âge des étudiants
     // Ajouter dans le renvoi de la méthode les notes des étudiants
+    // Ajouter condition sinon programme renvoie erreur (inscription.toString() renvoi "null")
     public String toString(){
+        if (this.inscription == null){
+            this.inscription = new Inscription();
+        }
         return "Nom de l'étudiant : " + this.nom + ". Age : " + this.age + ". Notes obtenues : " +
         this.noteProgrammation + " en programmation, " + this.noteSysteme + " en système et " +
-        this.noteStage + " en stage."; 
+        this.noteStage + " en stage." + inscription.toString(); 
         }
             
 
@@ -193,6 +284,9 @@ class Etudiant{
         System.out.println("Entrez la note de stage");
         double noteStage = sc.nextDouble();
         this.noteStage = noteStage;
+
+        System.out.println("Entrez les codes inscription et pays");
+        Inscription inscription = new Inscription(sc.nextInt(), sc.nextInt());
     }
 
     // Créer une méthode qui renvoie la moyenne de l'étudiant
@@ -243,3 +337,80 @@ class Etudiant{
         }
      }
 }
+
+
+// Création d'une classe Inscription avec attributs, constructeurs, accesseurs (encapsulation)
+class Inscription{
+    // Attributs de la classe
+    private int codeInscription;
+    private int codePays;
+
+
+    // Constructeurs 
+    public Inscription(){}
+
+    public Inscription(int codeInscription){
+        this.setCodeInscription(codeInscription);
+    }
+
+    public Inscription(int codeInscription, int codePays){
+        this.setCodeInscription(codeInscription);
+        this.setCodePays(codePays);
+    }
+
+
+    // Accesseurs (get et set)
+    // codeInscription
+    public int getCodeInscription(){
+        return this.codeInscription;
+    }
+    public void setCodeInscription(int codeInscription){
+        if ((codeInscription == 1) || (codeInscription == 2)){
+        this.codeInscription = codeInscription;} else {
+            System.out.println("Erreur, le code inscription doit être 1 ou 2");
+        }
+    }
+    // codePays
+    public int getCodePays(){
+        return this.codePays;
+    }
+    public void setCodePays(int codePays){
+        if ((codePays == 1) || (codePays == 2) || (codePays == 3)){
+        this.codePays = codePays;} else {
+            System.out.println("Erreur, le code pays doit être égale à 1, 2 ou 3");
+        }
+    }
+
+    // Méthode retournant un String selon le code pays
+
+    public String Nationalite(){
+        if (codePays == 1){
+            return "français";
+        } else {
+            if (codePays == 2){
+                return "étranger francophone";
+            } else if (codePays == 3){
+                return "étranger non francophone";
+            } else {
+                return "Erreur, le code pays renseigné n'existe pas";
+            }
+        }
+    }
+
+    public String typeInscription(){
+        if (codeInscription == 1){
+            return "Première inscription";
+        } else if (codeInscription == 2){
+            return "Réinscription";
+        } else {
+            return "Erreur, le code inscription renseingé n'existe pas";
+        }
+    }
+
+    public String toString(){
+        return "L'étudiant est : " + this.Nationalite() + " et possède le statut d'inscription suivant : " 
+        + this.typeInscription();
+    }
+}
+
+
