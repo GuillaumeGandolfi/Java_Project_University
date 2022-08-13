@@ -6,6 +6,7 @@
  */
 
 package TP_Java.TP_Etudiant;
+import java.util.ArrayList; // Import ArrayList
 import java.util.Scanner; // Import Scanner
 
 public class ExoEtudiant {
@@ -110,7 +111,37 @@ public class ExoEtudiant {
         System.out.println(etudiant4);
         etudiant5.setInscription(new Inscription(1, 1));
         System.out.println(etudiant5);
-    }
+
+
+        // Création d'une nouvelle promotion
+        Promotion ebim = new Promotion(2022);
+
+        // Inscription des étudiants dans la promotion
+        ebim.inscrire(etudiant1);
+        ebim.inscrire(etudiant2);
+        ebim.inscrire(etudiant3);
+        ebim.inscrire(etudiant4);
+        ebim.inscrire(etudiant5);
+        ebim.inscrire(etudiant7);
+        ebim.inscrire(etudiant8);
+        ebim.inscrire(etudiant9);
+
+        // Afficher la liste des étudiants
+        System.out.println(ebim.afficheEtudiants());
+        // Afficher nombre d'étudiants de la promotion
+        System.out.println(ebim.nbEtudiants());
+        // Afficher le 3ème étudiant de la liste
+        System.out.println(ebim.getEtudiant(2));
+
+        // Test méthode moyenne de la promotion
+        System.out.println(ebim.moyenneGénérale());
+
+        // Test méthode recherche étudiant
+        System.out.println(ebim.rechercheEtudiant("Jean"));
+
+        // Test méthode majors()
+        System.out.println(ebim.majors());
+        }
 }
 
 // Création de la classe Etudiant
@@ -287,6 +318,7 @@ class Etudiant{
 
         System.out.println("Entrez les codes inscription et pays");
         Inscription inscription = new Inscription(sc.nextInt(), sc.nextInt());
+        this.inscription = inscription;
     }
 
     // Créer une méthode qui renvoie la moyenne de l'étudiant
@@ -411,6 +443,126 @@ class Inscription{
         return "L'étudiant est : " + this.Nationalite() + " et possède le statut d'inscription suivant : " 
         + this.typeInscription();
     }
+}
+
+class Promotion{
+
+    // Attributs (ArrayList pour contenir des étudiants) et année
+    private ArrayList<Etudiant> promotion;
+    private int annee;
+
+
+    // Constructeur vide qui initialise l'année à 0 et une promotion vide
+    public Promotion(){
+        this.promotion = new ArrayList<Etudiant>();
+        this.annee = 0;
+    }
+    // Constructeur qui prend en paramètre une année et qui initialise une promotion vide
+    public Promotion(int annee){
+        this.promotion = new ArrayList<Etudiant>();
+        this.annee = annee;
+    }
+
+    // Accesseurs pour l'attribut annee
+    public int getAnnee(){
+        return this.annee;
+    }
+    public void setAnnee(int annee){
+        this.annee = annee;
+    }
+
+    // https://docs.oracle.com/javase/8/docs/api/java/util/ArrayList.html (lien des méthodes arraylist)
+    // Création méthode qui inscrit un étudiant à la promotion en vérifiant qu'il n'y est pas
+    public void inscrire(Etudiant etudiant){
+        if (promotion.contains(etudiant)){
+            System.out.println("L'étudiant est déjà inscrit dans la promotion");
+        } else {
+            promotion.add(etudiant);
+        }
+    }
+
+    // Création méthode qui renvoie le nombre d'étudiants de la promotion
+    public int nbEtudiants(){
+        return promotion.size();
+    }
+
+    // Création méthode qui vérifie que la promotion n'est pas vide et renvoie la liste des étudiants
+    public String afficheEtudiants(){
+        if (promotion.isEmpty()){
+            return "Erreur, la promotion est vide";
+        } else {
+            return "" + this.promotion;
+        }
+    }
+
+    // Création méthode qui retourne l'étudiant de rang i
+    // Amelioration : vérifier que i est un index qui existe dans la liste
+    public Etudiant getEtudiant(int i){
+        if ((i >= 0) && (i < nbEtudiants())){
+        return promotion.get(i);} else {
+            return null;
+        }
+    }
+
+    // Créer une méthode qui calcule la moyenne générale de la promotion
+    public double moyenneGénérale(){
+        double sommeMoyenne = 0;
+        if (nbEtudiants() != 0){
+        for (int i =0; i<nbEtudiants(); i++){
+            sommeMoyenne += this.getEtudiant(i).Moyenne();
+        }
+        return (sommeMoyenne / nbEtudiants());
+        } else {
+            return sommeMoyenne;
+        }
+    }
+
+    // Création méthode qui cherche si un étudiant est présent dans la promotion
+    public Etudiant rechercheEtudiant(String nom){
+        int i =0;
+        boolean trouve = false;
+        while((i<nbEtudiants()) && (trouve != true)){
+            if (this.getEtudiant(i).getNom().equals(nom)){
+                trouve = true;} else {
+                    i = i+1;}
+                }
+        if (trouve == true){
+            return this.getEtudiant(i);
+        } else {
+            return null;
+        }
+    }
+
+    // Création méthode qui créée une nouvelle liste des étudiants admis
+    public ArrayList<Etudiant> admis(){
+        int i = 0;
+        ArrayList<Etudiant> admis = new ArrayList<Etudiant>();
+        for (i=0; i < nbEtudiants(); i++){
+            if (this.getEtudiant(i).Moyenne() >= 10){
+                admis.add(this.getEtudiant(i));
+            }
+        }
+        return admis;
+    }
+
+    // Création méthode qui renvoie le major de promo
+    public  ArrayList<Etudiant> majors(){
+        int i; 
+    ArrayList<Etudiant> listemajors = new ArrayList<Etudiant>();
+    double moyenneCourante, meilleureMoyenne = 0;
+    for (i=0; i<nbEtudiants(); i++)
+    {
+      moyenneCourante = this.getEtudiant(i).Moyenne();
+      if (moyenneCourante > meilleureMoyenne) {
+          meilleureMoyenne = moyenneCourante;}
+    }
+    for (i=0; i<nbEtudiants(); i++)
+	   {
+	     if (this.getEtudiant(i).Moyenne() == meilleureMoyenne){
+			 listemajors.add(this.getEtudiant(i));}
+	   } 
+    return listemajors;
+  }
 }
 
 
