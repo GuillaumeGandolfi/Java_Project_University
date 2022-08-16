@@ -8,15 +8,11 @@
 
 package TP_Java.TP_Etudiant;
 
+import java.util.ArrayList;
+
 public class ExoPoste {
     
     public static void main(String[] args){
-
-        // Exemple création d'un objet postal
-        ObjetPostal objet1 = new ObjetPostal("Paris", "Montpellier", 34000, 2500, 0.24, 3);
-
-        // Test méthode toString()
-        System.out.println(objet1);
 
         // Créer des lettres (on utilise la classe mère pour créer des instances d'une classe fille)
         ObjetPostal lettre1 = new Lettre("Guillaume, igloo 3", "famille Kouk, igloo 2, banquise nord", 4000, 100, 0.02, 2, "ordinaire");
@@ -32,14 +28,27 @@ public class ExoPoste {
         System.out.println(colis2);
 
         // Test de la méthode tarrifAffranchissement
-        System.out.println(objet1.tarrifAffranchissement()); // -> 1.5 car taux recommandation == 3
-        System.out.println(lettre1.tarrifAffranchissement()); // -> 1 car non prioritaire, recommandation == 2, lettre donc +0.5 euros
-        System.out.println(colis1.tarrifAffranchissement()); // -> 5 car volume > 1/8 et colis donc +2 euros
+        System.out.println(lettre1.tarifAffranchissement()); // -> 1 car non prioritaire, recommandation == 2, lettre donc +0.5 euros
+        System.out.println(colis1.tarifAffranchissement()); // -> 5 car volume > 1/8 et colis donc +2 euros
+
+        // Test de la méthode tarifRemboursement
+        System.out.println(lettre1.tarifRemboursement()); // 1.5 car recommandation == 2
+        System.out.println(colis2.tarifRemboursement()); // 125, recommandation == 3 donc 50% de la valeur déclarée (250)
+
+
+        // Tester la classe SacPostal
+        SacPostal sac1 = new SacPostal(3); // maximum 3m3
+        
+        // Ajout d'objets
+        sac1.ajoute(lettre1); sac1.ajoute(colis1); sac1.ajoute(lettre2); sac1.ajoute(colis2);
+
+        // Affichage
+        System.out.println(sac1);
     }
 }
 
 // Création d'une classe ObjetPostal contenant les éléments communs aux objets postaux
-class ObjetPostal{
+abstract class ObjetPostal{
     // Attributs de la classe
     private String origine;
     private String destination;
@@ -130,19 +139,28 @@ class ObjetPostal{
         this.poids + " grammes, volume de l'objet : " + this.volume + " m3 et taux de recommandation de l'expéditeur : " + this.tauxRecommandation + ".";
     }
 
+
+    // Pour améliorer méthode tarifAffranchissement, on définit un tarif de base
+    // Quand on a simplement besoin de déclarer une méthode, on utilise 'abstract'
+    abstract double getTarifBase();
+
     // Création méthode qui calcul taux d'affrichement (ici, ce qui est commun aux objets postaux)
     // Il va falloir spécialiser cette méthode dans les sous-classes
-    public double tarrifAffranchissement(){
-        double tarif = 0;
+    // Amélioration en utilisant getTarifBase()
+    public double tarifAffranchissement(){
+        double tarif = this.getTarifBase();
         if (tauxRecommandation == 2){
-            tarif = 0.5;
+            tarif += 0.5;
         } else {
             if (tauxRecommandation == 3){
-                tarif = 1.5;
+                tarif += 1.5;
             }
         }
         return tarif;
     }
+
+    // Création méthode qui calcul tarif de remboursement, va être spécialisée dans les sous-classes
+    abstract double tarifRemboursement();
 }
 
 
@@ -150,6 +168,9 @@ class ObjetPostal{
 class Lettre extends ObjetPostal{
     // Attributs de la classe (hérite des attributs de la classe ObjetPostal)
     private String priorite; // ordinaire ou urgente
+
+    // On ajoute tarif de base en attribut
+    private static double tarifBase = 0.5;
 
     // Constructeur vide
     public Lettre(){}
@@ -173,18 +194,43 @@ class Lettre extends ObjetPostal{
         }
     }
 
+    // Surcharge de getTarifBase() donc on précise @Override
+    @Override
+    double getTarifBase(){
+        return Lettre.tarifBase;
+    }
+    public static void setTarifBase(double tarifBase){
+        Lettre.tarifBase = tarifBase;
+    }
+
     // Redéfinir la méthode toString()
+    @Override
     public String toString(){
         // Pour appeler une méthode de la classe mère, on utilise également 'super'
         return super.toString() + " Priorite de la lettre : " + this.priorite + ".";
     }
 
-    // Spécialisation de la méthode tarrifAffranchissement
-    public double tarrifAffranchissement(){
+    // Spécialisation de la méthode tarifAffranchissement
+    @Override
+    public double tarifAffranchissement(){
         // lettre = 0.5 euros de base
-        double tarif = 0.5 + super.tarrifAffranchissement();
+        double tarif = super.tarifAffranchissement();
         if (priorite == "urgente"){
             tarif += 0.3;
+        }
+        return tarif;
+    }
+
+    // Spécialisation de la méthode tarifRemboursement
+    @Override
+    public double tarifRemboursement(){
+        double tarif = 0;
+        if (getTauxRecommandation() == 2){
+            tarif += 1.5;
+        } else {
+            if (getTauxRecommandation() == 3){
+                tarif += 15;
+            }
         }
         return tarif;
     }
@@ -195,6 +241,9 @@ class Colis extends ObjetPostal{
     // Attributs de la classe (héritage des attributs de la classe ObjetPostal)
     private String declarationContenu;
     private double valeurDeclaree; // en euros
+
+    // Ici aussi on ajoute tarif de base
+    private static double tarifBase = 2;
 
     // Constructeur vide
     public Colis(){}
@@ -220,20 +269,114 @@ class Colis extends ObjetPostal{
         this.valeurDeclaree = valeurDeclaree;
     }
 
+    @Override
+    double getTarifBase(){
+        return Colis.tarifBase;
+    }
+    public static void setTarifBase(double tarifBase){
+        Colis.tarifBase = tarifBase;
+    }
+
     // Redefinir méthode toString()
     public String toString(){
         return super.toString() + " Contenu de colis : " + this.declarationContenu + ". Valeur declaree : " + this.valeurDeclaree + " euros.";
     }
 
-    // Spécialisation de la méthode tarrifAffranchissement
-    public double tarrifAffranchissement(){
+    // Spécialisation de la méthode tarifAffranchissement
+    @Override
+    public double tarifAffranchissement(){
         // colis = 2 euros de base
-        double tarif = 2 + super.tarrifAffranchissement();
+        double tarif = super.tarifAffranchissement();
         if (getVolume() > 1/8){
             tarif += 3;
         }
         return tarif;
     }
+
+    // Spécialisation de la méthode tarifRemboursement
+    @Override
+    public double tarifRemboursement(){
+        double tarif = 0;
+        if (getTauxRecommandation() == 2){
+            tarif += (getValeurDeclaree()*0.1);
+        } else {
+            if (getTauxRecommandation() == 3){
+                tarif += (getValeurDeclaree()*0.5);
+            }
+        }
+        return tarif;
+    }
 }
 
+// Création d'une classe SacPostal (peut contenir des objets postaux)
+class SacPostal{
+    // Comme un sac peut contenir un certain nombre d'objets, il faut une liste en attribut
+    private ArrayList<ObjetPostal> contenu = new ArrayList<>();
+    private double capaciteMaximale = 0.5; // en m3
 
+    // Constructeur vide 
+    public SacPostal(){}
+
+    // Constructeur avec attribut capacite max
+    public SacPostal(double capaciteMaximale){
+        this.capaciteMaximale = capaciteMaximale;
+    }
+
+    // Accesseurs
+    public double getCapaciteMaximale(){
+        return this.capaciteMaximale;
+    }
+    public void setCapaciteMaximale(double capaciteMaximale){
+        this.capaciteMaximale = capaciteMaximale;
+    }
+
+    // Création d'une méthode qui renvoie le volume occupé du sac
+    public double volumeSac(){
+        double volume = 0;
+        for (ObjetPostal objet:contenu){
+            volume += objet.getVolume();
+        }
+        return volume;
+    }
+
+    // Création méthode pour ajouter un objet dans le sac, s'il y rentre
+    public void ajoute(ObjetPostal objet){
+        /** 
+         * On vérifie d'abord si l'objet n'est pas déjà dans le sac
+         * Puis on vérifie que le volume du sac disponible permet de faire entrer l'objet
+         * Si oui, on ajoute l'objet dans le sac
+         */
+        if ((!contenu.contains(objet)) && ((objet.getVolume() + this.volumeSac()) <= this.getCapaciteMaximale())){
+            contenu.add(objet);
+        }
+    }
+
+    // Création méthode pour connaitre la valeur de remboursement en cas de perte
+    public double tarifRemboursement(){
+        double tarif = 0;
+        for (ObjetPostal objet:contenu){
+            tarif += objet.tarifRemboursement();
+        }
+        return tarif;
+    }
+    
+    // Création méthode pour créer, remplir et retourner un nouveau sac à tous les objets de même code postal, extraits d'un autre sac
+    public SacPostal remplissage(int postal){
+        SacPostal nouveau = new SacPostal(this.getCapaciteMaximale());
+        for (ObjetPostal objet:contenu){
+            if (objet.getCodePostal() == postal){
+                nouveau.ajoute(objet);
+            }
+        }
+        return nouveau;
+    }
+
+    // Méthode toString()
+    public String toString(){
+        String chaine="[";
+        for (ObjetPostal objet:contenu){
+            chaine += objet.toString() + "\n";
+        }
+        return chaine + "]";
+    }
+}
